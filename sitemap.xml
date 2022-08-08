@@ -2,7 +2,7 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
-    <loc>https://retr0-123.github.io/2022/06/15/v8-oob/</loc>
+    <loc>https://retr0-123.github.io/v8-oob/</loc>
     
     <lastmod>2022-08-08</lastmod>
     
@@ -11,7 +11,7 @@
   </url>
   
   <url>
-    <loc>https://retr0-123.github.io/2022/08/07/qwb2021-notebook/</loc>
+    <loc>https://retr0-123.github.io/qwb2021-notebook/</loc>
     
     <lastmod>2022-08-08</lastmod>
     
@@ -29,7 +29,7 @@
   </url>
   
   <url>
-    <loc>https://retr0-123.github.io/movies/index.html</loc>
+    <loc>https://retr0-123.github.io/games/index.html</loc>
     
     <lastmod>2022-08-06</lastmod>
     
@@ -38,7 +38,7 @@
   </url>
   
   <url>
-    <loc>https://retr0-123.github.io/games/index.html</loc>
+    <loc>https://retr0-123.github.io/movies/index.html</loc>
     
     <lastmod>2022-08-06</lastmod>
     
@@ -110,6 +110,13 @@
 
   
   <url>
+    <loc>https://retr0-123.github.io/tags/linux%E5%86%85%E6%A0%B8pwn/</loc>
+    <lastmod>2022-08-08</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
     <loc>https://retr0-123.github.io/tags/v8/</loc>
     <lastmod>2022-08-08</lastmod>
     <changefreq>weekly</changefreq>
@@ -123,24 +130,17 @@
     <priority>0.2</priority>
   </url>
   
-  <url>
-    <loc>https://retr0-123.github.io/tags/linux%E5%86%85%E6%A0%B8pwn/</loc>
-    <lastmod>2022-08-08</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
 
   
   <url>
-    <loc>https://retr0-123.github.io/categories/chrome-pwn/</loc>
+    <loc>https://retr0-123.github.io/categories/linux%E5%86%85%E6%A0%B8pwn/</loc>
     <lastmod>2022-08-08</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
-    <loc>https://retr0-123.github.io/categories/linux%E5%86%85%E6%A0%B8pwn/</loc>
+    <loc>https://retr0-123.github.io/categories/chrome-pwn/</loc>
     <lastmod>2022-08-08</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
