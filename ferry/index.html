@@ -1,0 +1,239 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"><title>USENIX Security 2022 summer Ferry:State-Aware Symbolic Execution for Exploring State-Dependent Program Paths 阅读笔记 | retr0123的博客</title><meta name="keywords" content="符号执行技术"><meta name="author" content="retr0123"><meta name="copyright" content="retr0123"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="主要贡献提出了程序状态敏感符号执行的概念，着眼于将程序状态引入到符号执行过程中去，分析并提出了将程序内部状态引入符号执行过程的方法，实现了工具Ferry，并针对现实世界中存在的的程序进行了一定优化，在多个具备内部状态的程序上进行测试，取得了良好的成果，发现多个未知漏洞，性能提升较原有研究有明显提升 问题的提出符号执行是执行自动化漏洞挖掘任务的有效工具，得到了广泛的运用。符号执行通过符号化变量并进行">
+<meta property="og:type" content="article">
+<meta property="og:title" content="USENIX Security 2022 summer Ferry:State-Aware Symbolic Execution for Exploring State-Dependent Program Paths 阅读笔记">
+<meta property="og:url" content="https://retr0-123.github.io/ferry/index.html">
+<meta property="og:site_name" content="retr0123的博客">
+<meta property="og:description" content="主要贡献提出了程序状态敏感符号执行的概念，着眼于将程序状态引入到符号执行过程中去，分析并提出了将程序内部状态引入符号执行过程的方法，实现了工具Ferry，并针对现实世界中存在的的程序进行了一定优化，在多个具备内部状态的程序上进行测试，取得了良好的成果，发现多个未知漏洞，性能提升较原有研究有明显提升 问题的提出符号执行是执行自动化漏洞挖掘任务的有效工具，得到了广泛的运用。符号执行通过符号化变量并进行">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://retr0-123.github.io/img/default1.jpeg">
+<meta property="article:published_time" content="2022-09-24T12:28:14.000Z">
+<meta property="article:modified_time" content="2022-09-24T13:15:49.852Z">
+<meta property="article:author" content="retr0123">
+<meta property="article:tag" content="符号执行技术">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://retr0-123.github.io/img/default1.jpeg"><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://retr0-123.github.io/ferry/"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":true,"languages":{"hits_empty":"找不到您查询的内容：${query}"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  date_suffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: {"limitCount":50,"languages":{"author":"作者: retr0123","link":"链接: ","source":"来源: retr0123的博客","info":"著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。"}},
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'USENIX Security 2022 summer Ferry:State-Aware Symbolic Execution for Exploring State-Dependent Program Paths 阅读笔记',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2022-09-24 21:15:49'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script></head><body><div id="web_bg"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="/img/head.jpeg" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">4</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">4</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">3</div></a></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><span> 首页</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><span> 文章</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/archives/"><span> 归档</span></a></li><li><a class="site-page child" href="/tags/"><span> 标签</span></a></li><li><a class="site-page child" href="/categories/"><span> 分类</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><span> 列表</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/books/"><span> 书单</span></a></li><li><a class="site-page child" href="/movies/"><span> 电影</span></a></li><li><a class="site-page child" href="/games/"><span> 游戏</span></a></li><li><a class="site-page child" href="/gallery/"><span> 相册</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><span> 友情链接</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><span> 关于</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('/img/default1.jpeg')"><nav id="nav"><span id="blog_name"><a id="site-name" href="/">retr0123的博客</a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><span> 首页</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><span> 文章</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/archives/"><span> 归档</span></a></li><li><a class="site-page child" href="/tags/"><span> 标签</span></a></li><li><a class="site-page child" href="/categories/"><span> 分类</span></a></li></ul></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><span> 列表</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/books/"><span> 书单</span></a></li><li><a class="site-page child" href="/movies/"><span> 电影</span></a></li><li><a class="site-page child" href="/games/"><span> 游戏</span></a></li><li><a class="site-page child" href="/gallery/"><span> 相册</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><span> 友情链接</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><span> 关于</span></a></div></div><div id="toggle-menu"><a class="site-page"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">USENIX Security 2022 summer Ferry:State-Aware Symbolic Execution for Exploring State-Dependent Program Paths 阅读笔记</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2022-09-24T12:28:14.000Z" title="发表于 2022-09-24 20:28:14">2022-09-24</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2022-09-24T13:15:49.852Z" title="更新于 2022-09-24 21:15:49">2022-09-24</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E8%AE%BA%E6%96%87%E7%AC%94%E8%AE%B0/">论文笔记</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">字数总计:</span><span class="word-count">2.3k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>6分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="USENIX Security 2022 summer Ferry:State-Aware Symbolic Execution for Exploring State-Dependent Program Paths 阅读笔记"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><h2 id="主要贡献"><a href="#主要贡献" class="headerlink" title="主要贡献"></a>主要贡献</h2><p>提出了程序状态敏感符号执行的概念，着眼于将程序状态引入到符号执行过程中去，分析并提出了将程序内部状态引入符号执行过程的方法，实现了工具Ferry，并针对现实世界中存在的的程序进行了一定优化，在多个具备内部状态的程序上进行测试，取得了良好的成果，发现多个未知漏洞，性能提升较原有研究有明显提升</p>
+<h2 id="问题的提出"><a href="#问题的提出" class="headerlink" title="问题的提出"></a>问题的提出</h2><p>符号执行是执行自动化漏洞挖掘任务的有效工具，得到了广泛的运用。符号执行通过符号化变量并进行推导的方式来进行程序执行路径空间的搜索，而不是实际去运行程序。而有很多程序（百分之八十以上，根据作者的调研）存在内部状态的变化，在特定的变量值情况下会走向不同的路径，而这是符号执行方法难以覆盖的。</p>
+<h2 id="目标"><a href="#目标" class="headerlink" title="目标"></a>目标</h2><pre><code>解决符号执行方法在处理程序内部状态变化上的不足
+</code></pre>
+<h2 id="问题分析"><a href="#问题分析" class="headerlink" title="问题分析"></a>问题分析</h2><p>对目标程序的范围做限定</p>
+<pre><code>针对存在内部状态的程序，具体定义为具有下面三个特点的程序
+1、从单个数据源接收序列数据 
+2、序列化处理数据 
+3、使用一个或多个状态描述变量来确定程序内部状态
+</code></pre>
+<p>如何描述程序的内部状态</p>
+<pre><code>定义状态描述变量（state-describing variable），具有以下两个特征：
+1、与输入存在数据依赖（定义为InputDetermined）
+2、在某个条件语句中被检查（定义为BranchRelated）
+定义引起状态描述变量变化的操作为状态描述变量操作（state-describing-variable operation,SDVO）
+SDVO会导致状态描述变量发生以下三类变化：
+1、变量生成
+2、变量值的改变
+3、变量释放
+通过以上三类变化可以定位SDVO
+</code></pre>
+<p>对程序内部状态的定义</p>
+<pre><code>1、被一组状态描述变量所决定
+2、不同状态至少有一个描述变量值不同
+3、不同状态的行为不同
+</code></pre>
+<h2 id="Ferry工具结构"><a href="#Ferry工具结构" class="headerlink" title="Ferry工具结构"></a>Ferry工具结构</h2><h3 id="总体描述"><a href="#总体描述" class="headerlink" title="总体描述"></a>总体描述</h3><p>三步工作：<br>1、通过符号执行收集变量的InputDetermined和BranchRelated信息，来确定状态描述变量<br>2、通过状态描述变量进行符号执行，来对程序内部状态进行遍历，在不同的内部状态下进行程序执行路径搜索工作<br>3、确定不活跃的状态描述变量，减小记录的状态描述变量数量来提高性能，通过输入分块技术来实现快速对某块代码进行符号执行</p>
+<h3 id="状态描述变量识别"><a href="#状态描述变量识别" class="headerlink" title="状态描述变量识别"></a>状态描述变量识别</h3><p>使用动态污点追踪技术 将所有输入标记为污点数据，并将其作为一种数据约束扩散下去，变量中有以下两种情况的将被标记为InputDetermined：<br>1、变量的值能被输入直接赋予的：<br>形如：</p>
+<pre><code>var=input
+</code></pre>
+<p>2、变量的值变化需要判断条件，且条件直接检查输入<br>形如：</p>
+<pre><code>if(input)
+      var = someting
+</code></pre>
+<p>以下情况将被标记为BranchRelated：<br>在某个分支语句中作为条件变量被检查<br>形如：</p>
+<pre><code>if(var)
+      dosomething
+else
+      dosomethingelse
+</code></pre>
+<p>两个标记都是全局标记，不局限于单个函数，当两个标记同时存在于一个变量上，该变量即被认为是一个状态描述变量</p>
+<p>变量存在存活时间，而过期的状态描述变量对后面的符号执行过程没有帮助，需要被识别出来，识别方式为寻找以下SDVO：<br>1、局部状态描述变量所在函数的return操作<br>2、对状态描述变量的free操作</p>
+<p>此时需要检查程序内部状态的变化</p>
+<h3 id="程序状态敏感符号执行"><a href="#程序状态敏感符号执行" class="headerlink" title="程序状态敏感符号执行"></a>程序状态敏感符号执行</h3><p>目的是使用程序内部状态信息来引导符号执行过程，分析记录程序可能存在的内部状态<br>方法：使用SDVO和状态描述变量的数据约束来进行状态的确定<br>Ferry记录每个输入的约束，保证输入约束相同，程序执行路径相同<br>同时，程序状态在Ferry这里表现为状态约束变量，两次执行过程中，状态约束变量上的数据约束不同，程序内部状态也不同<br>SDVO的执行会引起状态变化（如问题分析中所说，会改变状态描述变量），SDVO的位置也会被Ferry记录<br>如果有以下情况，就认为两次执行过程的探索到了不同的状态：<br>1、执行到SDVO的位置不同<br>2、状态描述变量的数据约束不同</p>
+<p>每次发生状态变化时（即遇到SDVO），Ferry会将探索到的状态与已探索的状态比较，如果是新状态就记录，不是就回滚到上一个SDVO位置重新开始探索</p>
+<p>记录状态的方法：所有状态描述变量和它们的数据约束，最后一个SDVO的位置</p>
+<p>详细算法如下图：</p>
+<img src="/ferry/algorithm.png" class="">
+<p>函数符号含义：<br>pickNext()：返回下一个执行路径<br>updateState(s, v, e)：接收原状态s，被赋值变量v和值e，返回新状态s’<br>succ(l)：l指令的后继，就是l的下一条指令<br>isSat()：调用SMT检测器检查是否满足条件检查语句的约束</p>
+<p>一次探索状态空间的例子</p>
+<img src="/ferry/example.png" class="">
+
+<h3 id="优化方案"><a href="#优化方案" class="headerlink" title="优化方案"></a>优化方案</h3><p>应用上述方法到现实软件上，存在以下两个问题：<br>1、现实软件中的状态描述变量非常多<br>2、现实中的漏洞经常出现在多个状态转换后的深层状态中</p>
+<p>提出的优化方法：<br>1、非活跃状态描述变量的状态缩减</p>
+<p>作者通过调研发现不同的状态描述变量被访问的频率不同，意味着在状态变化过程中，这些变量的重要程度也是不同的，想到可以只追踪最重要的几个变量，通过实验确定追踪3个变量带来的效果较好，于是设置Ferry的默认追踪数量为3</p>
+<p>2、基于输入分块的捷径符号执行</p>
+<p>现实世界中，漏洞多存在多个状态转换的深层状态中，但这个深层状态有时候并不需要进行多次状态转换才能达到，有些深层状态前面的状态转换都与无关，只有最后的几次转换（即最后几次分支检查）存在影响。作者以此实现了捷径执行的方法，要求用户手动指定输入格式，Ferry通过分析，将输入中的各个部分分块，识别出哪些部分是真正影响到深层状态的，通过单纯使用这一部分输入，直接跳转分析对应状态相关分支的方法来缩减符号执行的空间</p>
+<p>输入分块技术</p>
+<pre><code>目的：将输入数据分块，分析出不同状态依赖分支所需要的输入数据区域
+方法：监视输入（即IO函数的目标缓冲区），分析每一个转移或复制数据的函数（e.g. memcopy），将转移或复制的目标缓冲区作为后面的状态依赖分支的数据输入，被转移或复制的数据就能被确定为单独的状态依赖数据，输入数据的边界就能被划分出来
+原理：作者对现实中的程序做了调研，发现很大一部分程序存在一个现象：对处理状态依赖分支的函数，它会创建一个缓冲区，把它不处理的输入数据复制过去，以便后面的函数使用
+</code></pre>
+<p>捷径符号执行</p>
+<pre><code>目的：快速对目标状态依赖分支的代码进行探索
+方法：倒过来符号化输入，利用输入分块的结果，从最后一个块开始符号化，前面的块全部使用实例数据（i.e. 常数），只有当后面执行路径被遍历完了才符号化前面的
+原理：当前面的块都使用的实例数据，除了符号化部分数据的对应的代码之外的程序执行路径实际上都是确定的，符号执行引擎就可以快速到达需要被搜索的代码，进行对应分支的代码执行路径工作，相当于取了捷径
+</code></pre>
+<h3 id="Ferry实现上的一些细节"><a href="#Ferry实现上的一些细节" class="headerlink" title="Ferry实现上的一些细节"></a>Ferry实现上的一些细节</h3><p>使用angr框架，代码量为5097行python，使用Z3来进行约束求解，使用unicorn框架进行输入分块后的输入实例化操作</p>
+<h2 id="Ferry的局限性"><a href="#Ferry的局限性" class="headerlink" title="Ferry的局限性"></a>Ferry的局限性</h2><p>对于具有大量内部状态，输入的细微变化都会引起状态变化的程序，Ferry会产生状态爆炸，约束求解会遇到相当严峻的挑战<br>并不完全通用，对于不满足文中定义的程序，如何确定其状态描述变量还是一个问题</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="https://retr0-123.github.io">retr0123</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="https://retr0-123.github.io/ferry/">https://retr0-123.github.io/ferry/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://retr0-123.github.io" target="_blank">retr0123的博客</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E7%AC%A6%E5%8F%B7%E6%89%A7%E8%A1%8C%E6%8A%80%E6%9C%AF/">符号执行技术</a></div><div class="post_share"><div class="social-share" data-image="/img/default1.jpeg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="next-post pull-full"><a href="/CVE-2020-6418/"><img class="next-cover" src="/img/default3.jpeg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">CVE-2020-6418漏洞复现</div></div></a></div></nav><hr/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div class="vcomment" id="vcomment"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="/img/head.jpeg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">retr0123</div><div class="author-info__description">赛博兽人</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">4</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">4</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">3</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/retr0-123"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/retr0-123" target="_blank" title="Github"><i class="fab fa-github"></i></a><a class="social-icon" href="mailto:mouyeqi@126.com" target="_blank" title="Email"><i class="fas fa-envelope"></i></a><a class="social-icon" href="http://wpa.qq.com/msgrd?v=3&amp;uin=734972071&amp;site=qq&amp;menu=yes" target="_blank" title="qq"><i class="fab fa-qq"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">在博客中遇到问题可以通过github、qq和邮箱联系作者</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%BB%E8%A6%81%E8%B4%A1%E7%8C%AE"><span class="toc-number">1.</span> <span class="toc-text">主要贡献</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%97%AE%E9%A2%98%E7%9A%84%E6%8F%90%E5%87%BA"><span class="toc-number">2.</span> <span class="toc-text">问题的提出</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%9B%AE%E6%A0%87"><span class="toc-number">3.</span> <span class="toc-text">目标</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%97%AE%E9%A2%98%E5%88%86%E6%9E%90"><span class="toc-number">4.</span> <span class="toc-text">问题分析</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Ferry%E5%B7%A5%E5%85%B7%E7%BB%93%E6%9E%84"><span class="toc-number">5.</span> <span class="toc-text">Ferry工具结构</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%80%BB%E4%BD%93%E6%8F%8F%E8%BF%B0"><span class="toc-number">5.1.</span> <span class="toc-text">总体描述</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%8A%B6%E6%80%81%E6%8F%8F%E8%BF%B0%E5%8F%98%E9%87%8F%E8%AF%86%E5%88%AB"><span class="toc-number">5.2.</span> <span class="toc-text">状态描述变量识别</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%A8%8B%E5%BA%8F%E7%8A%B6%E6%80%81%E6%95%8F%E6%84%9F%E7%AC%A6%E5%8F%B7%E6%89%A7%E8%A1%8C"><span class="toc-number">5.3.</span> <span class="toc-text">程序状态敏感符号执行</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BC%98%E5%8C%96%E6%96%B9%E6%A1%88"><span class="toc-number">5.4.</span> <span class="toc-text">优化方案</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Ferry%E5%AE%9E%E7%8E%B0%E4%B8%8A%E7%9A%84%E4%B8%80%E4%BA%9B%E7%BB%86%E8%8A%82"><span class="toc-number">5.5.</span> <span class="toc-text">Ferry实现上的一些细节</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Ferry%E7%9A%84%E5%B1%80%E9%99%90%E6%80%A7"><span class="toc-number">6.</span> <span class="toc-text">Ferry的局限性</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/ferry/" title="USENIX Security 2022 summer Ferry:State-Aware Symbolic Execution for Exploring State-Dependent Program Paths 阅读笔记"><img src="/img/default1.jpeg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="USENIX Security 2022 summer Ferry:State-Aware Symbolic Execution for Exploring State-Dependent Program Paths 阅读笔记"/></a><div class="content"><a class="title" href="/ferry/" title="USENIX Security 2022 summer Ferry:State-Aware Symbolic Execution for Exploring State-Dependent Program Paths 阅读笔记">USENIX Security 2022 summer Ferry:State-Aware Symbolic Execution for Exploring State-Dependent Program Paths 阅读笔记</a><time datetime="2022-09-24T12:28:14.000Z" title="发表于 2022-09-24 20:28:14">2022-09-24</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/CVE-2020-6418/" title="CVE-2020-6418漏洞复现"><img src="/img/default3.jpeg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="CVE-2020-6418漏洞复现"/></a><div class="content"><a class="title" href="/CVE-2020-6418/" title="CVE-2020-6418漏洞复现">CVE-2020-6418漏洞复现</a><time datetime="2022-08-08T14:14:31.000Z" title="发表于 2022-08-08 22:14:31">2022-08-08</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/qwb2021-notebook/" title="内核竞争条件漏洞学习——以qwb2021-notebook为例"><img src="/img/default1.jpeg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="内核竞争条件漏洞学习——以qwb2021-notebook为例"/></a><div class="content"><a class="title" href="/qwb2021-notebook/" title="内核竞争条件漏洞学习——以qwb2021-notebook为例">内核竞争条件漏洞学习——以qwb2021-notebook为例</a><time datetime="2022-08-07T11:29:51.000Z" title="发表于 2022-08-07 19:29:51">2022-08-07</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/v8-oob/" title="浏览器pwn学习——v8-oob"><img src="/img/default2.jpeg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="浏览器pwn学习——v8-oob"/></a><div class="content"><a class="title" href="/v8-oob/" title="浏览器pwn学习——v8-oob">浏览器pwn学习——v8-oob</a><time datetime="2022-06-15T12:59:51.000Z" title="发表于 2022-06-15 20:59:51">2022-06-15</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2022 By retr0123</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="直达评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><i class="fas fa-arrow-up"></i></button></div></div><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="is-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据库加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div id="local-search-results"></div></div></div><div id="search-mask"></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox.umd.min.js"></script><script src="/js/search/local-search.js"></script><div class="js-pjax"><script>function loadValine () {
+  function initValine () {
+    const valine = new Valine(Object.assign({
+      el: '#vcomment',
+      appId: '6lV8ublXbiD9YGw1NWqqP8EY-gzGzoHsz',
+      appKey: 'fR9lFPbKYv9IjcPc3EBENwFz',
+      avatar: 'monsterid',
+      serverURLs: '',
+      emojiMaps: "",
+      path: window.location.pathname,
+      visitor: false
+    }, null))
+  }
+
+  if (typeof Valine === 'function') initValine() 
+  else getScript('https://cdn.jsdelivr.net/npm/valine/dist/Valine.min.js').then(initValine)
+}
+
+if ('Valine' === 'Valine' || !true) {
+  if (true) btf.loadComment(document.getElementById('vcomment'),loadValine)
+  else setTimeout(loadValine, 0)
+} else {
+  function loadOtherComment () {
+    loadValine()
+  }
+}</script></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
